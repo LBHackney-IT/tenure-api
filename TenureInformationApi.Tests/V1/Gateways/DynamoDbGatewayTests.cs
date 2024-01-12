@@ -1,8 +1,9 @@
 using AutoFixture;
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using Hackney.Core.DynamoDb.EntityUpdater;
+using Hackney.Core.DynamoDb.EntityUpdater.Interfaces;
 using Hackney.Core.Testing.DynamoDb;
-using Hackney.Core.Testing.Shared;
 using Hackney.Shared.Tenure.Boundary.Requests;
 using Hackney.Shared.Tenure.Domain;
 using Hackney.Shared.Tenure.Factories;
@@ -14,9 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TenureInformationApi.V1.Gateways;
-using TenureInformationApi.V1.Infrastructure;
 using TenureInformationApi.V1.Infrastructure.Exceptions;
-using TenureInformationApi.V1.Infrastructure.Interfaces;
 using Xunit;
 
 namespace TenureInformationApi.Tests.V1.Gateways
