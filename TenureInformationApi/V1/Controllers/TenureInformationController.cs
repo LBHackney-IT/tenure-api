@@ -67,7 +67,7 @@ namespace TenureInformationApi.V1.Controllers
         [Route("{id}")]
         [LogCall(LogLevel.Information)]
         public async Task<IActionResult> GetByID([FromRoute] TenureQueryRequest query)
-        {   
+        {
             var token = _tokenFactory.Create(_contextWrapper.GetContextRequestHeaders(HttpContext));
             RestrictAccessToDisallowedEmail(token.Email, query.Id);
 
@@ -241,7 +241,7 @@ namespace TenureInformationApi.V1.Controllers
         {
             // This is an exceptional case where a specific user is not allowed to access a specific tenure
             // See HPT-641 for more information
-            if (email.ToLower() == Environment.GetEnvironmentVariable("DISALLOWED_EMAIL")?.ToLower())
+            if (email?.ToLower() == Environment.GetEnvironmentVariable("DISALLOWED_EMAIL")?.ToLower())
                 if (id == new Guid("febca798-ef0f-c5c8-9977-7d515f4d53a0"))
                     throw new UnauthorizedAccessException();
         }
