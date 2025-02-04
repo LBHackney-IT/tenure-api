@@ -75,6 +75,12 @@ namespace TenureInformationApi.V1.Controllers
             if (result.VersionNumber.HasValue)
                 eTag = result.VersionNumber.ToString();
 
+            var token = _tokenFactory.Create(_contextWrapper.GetContextRequestHeaders(HttpContext));
+            var email = token.Email;
+            if (email == Environment.GetEnvironmentVariable("DISALLOWED_EMAIL"))
+                if (query.Id == new Guid("febca798-ef0f-c5c8-9977-7d515f4d53a0"))
+                    return Unauthorized(query.Id);
+
             HttpContext.Response.Headers.Append(HeaderConstants.ETag, EntityTagHeaderValue.Parse($"\"{eTag}\"").Tag);
 
             return Ok(result.ToResponse());
