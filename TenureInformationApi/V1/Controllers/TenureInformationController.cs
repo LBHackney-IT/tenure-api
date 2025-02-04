@@ -68,8 +68,7 @@ namespace TenureInformationApi.V1.Controllers
         [LogCall(LogLevel.Information)]
         public async Task<IActionResult> GetByID([FromRoute] TenureQueryRequest query)
         {
-            var token = _tokenFactory.Create(_contextWrapper.GetContextRequestHeaders(HttpContext));
-            RestrictAccessToDisallowedEmail(token.Email, query.Id);
+            RestrictAccessToDisallowedEmail(query);
 
             var result = await _getByIdUseCase.Execute(query).ConfigureAwait(false);
             if (result == null) return NotFound(query.Id);
@@ -237,13 +236,14 @@ namespace TenureInformationApi.V1.Controllers
             return null;
         }
 
-        private void RestrictAccessToDisallowedEmail(string email, Guid id)
+        private void RestrictAccessToDisallowedEmail(TenureQueryRequest query)
         {
             // This is an exceptional case where a specific user is not allowed to access a specific tenure
             // See HPT-641 for more information
-            if (email?.ToLower() == Environment.GetEnvironmentVariable("DISALLOWED_EMAIL")?.ToLower())
-                if (id == new Guid("febca798-ef0f-c5c8-9977-7d515f4d53a0"))
-                    throw new UnauthorizedAccessException();
+            var token = _tokenFactory.Create(_contextWrapper.GetContextRequestHeaders(HttpContext));
+            if (string.Equals(token?.Email, Environment.GetEnvironmentVariable("DISALLOWED_EMAIL"), StringComparison.OrdinalIgnoreCase))
+                if (query?.Id == new Guid("febca798-ef0f-c5c8-9977-7d515f4d53a0"))
+                    throw new UnauthorizedAccessException("Access to this tenure is restricted for this user");
         }
     }
 }
