@@ -24,6 +24,7 @@ functions:
     environment:
       TENURE_SNS_ARN: ${ssm:/sns-topic/${self:provider.stage}/tenure/arn}
       EDIT_CHARGES_ALLOWED_GROUPS: ${ssm:/housing-tl/${self:provider.stage}/tenure-edit-charges-allowed-groups}
+      DISALLOWED_EMAIL: ${ssm:/housing-tl/${self:provider.stage}/disallowed-email}
     events:
       - http:
           path: /{proxy+}
