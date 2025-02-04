@@ -268,7 +268,9 @@ workflows:
           context: api-nuget-token-context
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - restrict-endpoint-exception
       - build-and-test:
           context:
             - api-nuget-token-context
