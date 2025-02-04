@@ -72,7 +72,7 @@ namespace TenureInformationApi.V1.Controllers
             if (token?.Email == Environment.GetEnvironmentVariable("DISALLOWED_EMAIL"))
                 if (query?.Id == new Guid("febca798-ef0f-c5c8-9977-7d515f4d53a0"))
                     return Unauthorized(query.Id);
-            
+
             var result = await _getByIdUseCase.Execute(query).ConfigureAwait(false);
             if (result == null) return NotFound(query.Id);
 

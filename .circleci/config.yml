@@ -270,13 +270,14 @@ workflows:
             branches:
               only:
                 - master
-                - restrict-endpoint-exception
       - build-and-test:
           context:
             - api-nuget-token-context
-            - SonarCloud  
-          requires:
-            - check-code-formatting
+            - SonarCloud 
+          filters:
+            branches:
+              only:
+                - master
       - assume-role-development:
           context: api-assume-role-housing-development-context
           requires:
