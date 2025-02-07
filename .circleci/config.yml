@@ -375,6 +375,10 @@ workflows:
           filters:
             branches:
               only: release
+      - assume-role-production:
+          context: api-assume-role-housing-production-context
+          requires:
+              - permit-production-release
       - deploy-to-production:
           context: api-nuget-token-context
           requires:
