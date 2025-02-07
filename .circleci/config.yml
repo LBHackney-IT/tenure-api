@@ -343,6 +343,7 @@ workflows:
           requires:
             - deploy-to-staging
       - assume-role-production:
+          name: assume-role-production-terraform
           context: api-assume-role-housing-production-context
           requires:
               - permit-production-terraform-release
@@ -351,7 +352,7 @@ workflows:
                only: release
       - terraform-init-and-plan-production:
           requires:
-            - assume-role-production
+            - assume-role-production-terraform
           filters:
             branches:
               only: release
@@ -376,14 +377,14 @@ workflows:
             branches:
               only: release
       - assume-role-production:
+          name: assume-role-production-api
           context: api-assume-role-housing-production-context
           requires:
               - permit-production-release
       - deploy-to-production:
           context: api-nuget-token-context
           requires:
-            - assume-role-production
-            - permit-production-release
+            - assume-role-production-api
           filters:
             branches:
               only: release
