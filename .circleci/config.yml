@@ -337,6 +337,7 @@ workflows:
           filters:
             branches:
               only: release
+      # Release Terraform
       - permit-production-terraform-release:
           type: approval
           requires:
@@ -366,10 +367,11 @@ workflows:
           filters:
             branches:
               only: release
+      # Release API
       - permit-production-release:
           type: approval
           requires:
-            - terraform-apply-production
+            - deploy-to-staging
           filters:
             branches:
               only: release
