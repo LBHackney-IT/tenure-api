@@ -383,6 +383,7 @@ workflows:
           context: api-nuget-token-context
           requires:
             - assume-role-production
+            - permit-production-release
           filters:
             branches:
               only: release
