@@ -1,5 +1,6 @@
 using AutoFixture;
 using FluentAssertions;
+using Hackney.Core.DynamoDb.EntityUpdater;
 using Hackney.Core.JWT;
 using Hackney.Core.Sns;
 using Hackney.Shared.Tenure.Boundary.Requests;
@@ -11,7 +12,6 @@ using System;
 using System.Threading.Tasks;
 using TenureInformationApi.V1.Factories;
 using TenureInformationApi.V1.Gateways.Interfaces;
-using TenureInformationApi.V1.Infrastructure;
 using TenureInformationApi.V1.UseCase;
 using Xunit;
 

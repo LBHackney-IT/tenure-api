@@ -1,5 +1,6 @@
 using AutoFixture;
 using FluentAssertions;
+using Hackney.Core.DynamoDb.EntityUpdater;
 using Hackney.Core.JWT;
 using Hackney.Core.Sns;
 using Hackney.Shared.Tenure.Domain;
