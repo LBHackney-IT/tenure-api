@@ -7,6 +7,10 @@ terraform {
   }
 }
 
+provider "aws" {
+  region = "eu-west-2"
+}
+
 locals {
   default_tags = {
     Name              = "tenure-information-api-${var.environment_name}"
