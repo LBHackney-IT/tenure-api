@@ -3,6 +3,7 @@ data "aws_vpc" "pre_production_vpc" {
     Name = "housing-pre-prod-pre-prod"
   }
 }
+
 resource "aws_security_group" "lambda" {
   name                   = "tenure-information-api-lambda-sg"
   description            = "Security group used by the tenure API lambda function"
