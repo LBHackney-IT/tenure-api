@@ -425,34 +425,19 @@ workflows:
           context: api-assume-role-housing-pre-production-context
           requires:
             - permit-pre-production-terraform-workflow
-          filters:
-            branches:
-              only: release
       - terraform-init-and-plan-pre-production:
           requires:
             - assume-role-pre-production
-          filters:
-            branches:
-              only: release
       - terraform-compliance-pre-production:
           requires:
             - terraform-init-and-plan-pre-production
-          filters:
-            branches:
-              only: release
       - permit-pre-production-terraform-deployment:
           type: approval
           requires:
             - terraform-compliance-pre-production
-          filters:
-            branches:
-              only: release
       - terraform-apply-pre-production:
           requires:
             - permit-pre-production-terraform-deployment
-          filters:
-            branches:
-              only: release
 
   deploy-code-pre-production:
     jobs:
@@ -467,14 +452,8 @@ workflows:
           context: api-assume-role-housing-pre-production-context
           requires:
             - build-and-test
-          filters:
-            branches:
-              only: release
       - deploy-to-pre-production:
           context:
           - api-nuget-token-context
           requires:
             - assume-role-pre-production        
-          filters:
-            branches:
-              only: release
