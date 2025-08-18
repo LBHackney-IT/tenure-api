@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
-using Hackney.Core;
 using System.IO;
 using System.Text;
+using Hackney.Core;
 
 namespace TenureInformationApi.V1.Infrastructure.Authorization
 {
