@@ -5,5 +5,5 @@ variable "environment_name" {
 
 variable "project_name" {
   type    = string
-  default = "Housing-Production"
+  default = "disaster-recovery-prod"
 }

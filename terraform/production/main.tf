@@ -36,7 +36,7 @@ locals {
 
 terraform {
   backend "s3" {
-    bucket  = "terraform-state-housing-production"
+    bucket  = "terraform-state-disaster-recovery"
     encrypt = true
     region  = "eu-west-2"
     key     = "services/tenure-information-api/state"

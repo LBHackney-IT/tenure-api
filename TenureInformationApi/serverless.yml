@@ -154,5 +154,5 @@ custom:
         - subnet-0ed7d7713d1127656
     production:
       subnetIds:
-        - subnet-01d3657f97a243261
-        - subnet-0b7b8fea07efabf34
+        - subnet-05e595c59b7d6c8df
+        - subnet-0e6bc9b4ac24493cc
