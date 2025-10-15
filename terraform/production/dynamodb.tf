@@ -33,16 +33,15 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-# Uncomment when lambda has been deployed
-# data "aws_lambda_function" "dynamodb_stream_trigger" {
-#   function_name = "dynamodb-tenure-stream-listener-production"
-# }
+data "aws_lambda_function" "dynamodb_stream_trigger" {
+  function_name = "dynamodb-tenure-stream-listener-production"
+}
 
-# resource "aws_lambda_event_source_mapping" "aws_lambda_event_source" {
-#   event_source_arn  = aws_dynamodb_table.tenureinformationapi_dynamodb_table.stream_arn
-#   function_name     = data.aws_lambda_function.dynamodb_stream_trigger.arn
-#   starting_position = "LATEST"
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-# }
+resource "aws_lambda_event_source_mapping" "aws_lambda_event_source" {
+  event_source_arn  = aws_dynamodb_table.tenureinformationapi_dynamodb_table.stream_arn
+  function_name     = data.aws_lambda_function.dynamodb_stream_trigger.arn
+  starting_position = "LATEST"
+  lifecycle {
+    create_before_destroy = true
+  }
+}
