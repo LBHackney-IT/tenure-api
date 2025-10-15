@@ -117,9 +117,10 @@ commands:
       - checkout
       - setup_remote_docker
       - run:
-          name: Install Node.js
+          name: Install Node.js 18
           command: |
-            apt-get update && apt-get install -y nodejs npm
+            curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+            apt-get install -y nodejs
       - run:
           name: Install serverless CLI
           command: npm i -g serverless
