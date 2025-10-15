@@ -1,21 +1,19 @@
 version: 2.1
 
 orbs:
-  aws-ecr: circleci/aws-ecr@3.0.0
-  aws-cli: circleci/aws-cli@0.1.9
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
   sonarcloud: sonarsource/sonarcloud@2.0.0
 
 executors:
   docker-python:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.12
   docker-terraform:
     docker:
       - image: "hashicorp/terraform:1.1.9"
   docker-dotnet:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
 
 references:
   workspace_root: &workspace_root "~"
@@ -119,11 +117,11 @@ commands:
       - run:
           name: Install Node.js 18
           command: |
-            curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-            apt-get install -y nodejs
+            curl -sL https://deb.nodesource.com/setup_20.x | bash -
+            apt-get update && apt-get install -y nodejs
       - run:
           name: Install serverless CLI
-          command: npm i -g serverless
+          command: npm i -g serverless@^3
       - run:
           name: Build lambda
           command: |
@@ -156,10 +154,10 @@ jobs:
       - sonarcloud/scan
       - run:
           name: build
-          command: docker-compose build tenure-information-api-test           
+          command: docker compose build tenure-information-api-test           
       - run:
           name: Run tests
-          command: docker-compose run tenure-information-api-test
+          command: docker compose run tenure-information-api-test
   assume-role-development:
     executor: docker-python
     steps:
@@ -235,6 +233,31 @@ jobs:
     steps:
       - deploy-lambda:
           stage: "production"
+  assume-role-pre-production:
+    executor: docker-python
+    steps:
+      - assume-role-and-persist-workspace:
+          aws-account: $AWS_ACCOUNT_PRE_PRODUCTION
+  terraform-init-and-plan-pre-production:
+    executor: docker-terraform
+    steps:
+      - terraform-init-then-plan:
+          environment: "pre-production"
+  terraform-compliance-pre-production:
+    executor: docker-terraform
+    steps:
+      - terraform-compliance:
+          environment: "pre-production"
+  terraform-apply-pre-production:
+    executor: docker-terraform
+    steps:
+      - terraform-apply:
+          environment: "pre-production"
+  deploy-to-pre-production:
+    executor: docker-dotnet
+    steps:
+      - deploy-lambda:
+          stage: "pre-production"
 
 workflows:
   # check:
@@ -358,7 +381,7 @@ workflows:
   #     - build-and-test:
   #         context:
   #           - api-nuget-token-context
-  #           - SonarCloud
+  #           - SonarCloud  
   #         requires:
   #           - check-code-formatting
   #     - assume-role-development:
@@ -423,22 +446,26 @@ workflows:
   #         filters:
   #           branches:
   #             only: release
+  #     # Release Terraform
   #     - permit-production-terraform-release:
   #         type: approval
   #         requires:
   #           - deploy-to-staging
       - assume-role-production:
+          name: assume-role-production-terraform
           context: api-assume-role-disaster-recovery-context
+          # requires:
+          #     - permit-production-terraform-release
           filters:
             branches:
               only: dr-testing
       - terraform-init-and-plan-production:
           requires:
-            - assume-role-production
+            - assume-role-production-terraform
           filters:
             branches:
               only: dr-testing
-      - permit-disaster-recovery-deployment:
+      - permit-terraform-apply:
           type: approval
           requires:
             - terraform-init-and-plan-production
@@ -447,16 +474,71 @@ workflows:
               only: dr-testing
       - terraform-apply-production:
           requires:
-            - permit-disaster-recovery-deployment
+            - permit-terraform-apply
           filters:
             branches:
               only: dr-testing
-      - deploy-to-production:
-          context: 
-            - api-nuget-token-context
-            - "Serverless Framework"
+      # Release API
+      - permit-production-release:
+          type: approval
           requires:
             - terraform-apply-production
           filters:
             branches:
+              only: release
+      - assume-role-production:
+          name: assume-role-production-api
+          context: api-assume-role-housing-production-context
+          requires:
+              - permit-production-release
+      - deploy-to-production:
+          context: api-nuget-token-context
+          requires:
+            - assume-role-production-api
+          filters:
+            branches:
               only: dr-testing
+
+  # deploy-terraform-pre-production:
+  #   jobs:
+  #     - permit-pre-production-terraform-workflow:
+  #         type: approval
+  #         filters:
+  #           branches:
+  #             only: release
+  #     - assume-role-pre-production:
+  #         context: api-assume-role-housing-pre-production-context
+  #         requires:
+  #           - permit-pre-production-terraform-workflow
+  #     - terraform-init-and-plan-pre-production:
+  #         requires:
+  #           - assume-role-pre-production
+  #     - terraform-compliance-pre-production:
+  #         requires:
+  #           - terraform-init-and-plan-pre-production
+  #     - permit-pre-production-terraform-deployment:
+  #         type: approval
+  #         requires:
+  #           - terraform-compliance-pre-production
+  #     - terraform-apply-pre-production:
+  #         requires:
+  #           - permit-pre-production-terraform-deployment
+
+  # deploy-code-pre-production:
+  #   jobs:
+  #     - build-and-test:
+  #         context: 
+  #           - api-nuget-token-context
+  #           - SonarCloud
+  #         filters:
+  #           branches:
+  #             only: release
+  #     - assume-role-pre-production:
+  #         context: api-assume-role-housing-pre-production-context
+  #         requires:
+  #           - build-and-test
+  #     - deploy-to-pre-production:
+  #         context:
+  #         - api-nuget-token-context
+  #         requires:
+  #           - assume-role-pre-production        

@@ -5,5 +5,10 @@ variable "environment_name" {
 
 variable "project_name" {
   type    = string
-  default = "disaster-recovery-prod"
+  default = "Housing-Production"
+}
+
+variable stream_enabled {
+  type    = bool
+  default = true
 }

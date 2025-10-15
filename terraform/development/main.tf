@@ -142,5 +142,4 @@ data "aws_iam_policy_document" "sns_topic_policy" {
 
       sid = "dev-statement"
     }	
-}	
-
+}

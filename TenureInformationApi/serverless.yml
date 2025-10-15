@@ -1,7 +1,7 @@
 service: tenure-information-api
 provider:
   name: aws
-  runtime: dotnet6
+  runtime: dotnet8
   memorySize: 2048
   tracing:
     lambda: true
@@ -14,8 +14,7 @@ plugins:
   - serverless-associate-waf
   - '@serverless/safeguards-plugin'
 package:
-  artifact: ./bin/release/net6.0/tenure-information-api.zip
-
+  artifact: ./bin/release/net8.0/tenure-information-api.zip
 functions:
   TenureInformationApi:
     name: ${self:service}-${self:provider.stage}
@@ -25,12 +24,13 @@ functions:
     environment:
       TENURE_SNS_ARN: ${ssm:/sns-topic/${self:provider.stage}/tenure/arn}
       EDIT_CHARGES_ALLOWED_GROUPS: ${ssm:/housing-tl/${self:provider.stage}/tenure-edit-charges-allowed-groups}
+      DISALLOWED_EMAIL: ${ssm:/housing-tl/${self:provider.stage}/disallowed-email}
     events:
       - http:
           path: /{proxy+}
           method: ANY
           authorizer:
-            arn: ${ssm:/api-authenticator/${self:provider.stage}/arn}
+            arn: ${self:custom.authorizerArns.${opt:stage}}
             type: request
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
@@ -51,6 +51,7 @@ functions:
           path: /swagger/{proxy+}
           method: GET
           private: false
+
 resources:
   Resources:
     lambdaExecutionRole:
@@ -95,15 +96,6 @@ resources:
                           - Ref: 'AWS::Region'
                           - Ref: 'AWS::AccountId'
                           - 'log-group:/aws/lambda/*:*:*'
-                - Effect: "Allow"
-                  Action:
-                    - "s3:PutObject"
-                    - "s3:GetObject"
-                  Resource:
-                    Fn::Join:
-                      - ""
-                      - - "arn:aws:s3:::"
-                        - "Ref": "ServerlessDeploymentBucket"
           - PolicyName: lambdaInvocation
             PolicyDocument:
               Version: '2012-10-17'
@@ -112,6 +104,23 @@ resources:
                   Action:
                     - "lambda:InvokeFunction"
                   Resource: "*"
+          - PolicyName: dynamo-stream
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "dynamodb:DescribeStream"
+                    - "dynamodb:ListStreams"
+                    - "dynamodb:GetRecords"  
+                    - "dynamodb:GetShardIterator"
+                  Resource:
+                    - 'Fn::Join':
+                        - ':'
+                        - - 'arn:aws:dynamodb'
+                          - Ref: 'AWS::Region'
+                          - Ref: 'AWS::AccountId'
+                          - 'table/TenureInformation/stream/*'
           - PolicyName: dynamoDBAccess
             PolicyDocument:
               Version: '2012-10-17'
@@ -122,12 +131,15 @@ resources:
                     - "dynamodb:BatchWrite"
                     - "dynamodb:DeleteItem"
                     - "dynamodb:DescribeStream"
+                    - "dynamodb:ListStreams"
                     - "dynamodb:DescribeTable"
                     - "dynamodb:Get*"
                     - "dynamodb:PutItem"
                     - "dynamodb:Query"
                     - "dynamodb:Scan"
                     - "dynamodb:UpdateItem"
+                    - "dynamodb:GetRecords"
+                    - "dynamodb:GetShardIterator"
                   Resource:
                     - 'Fn::Join':
                         - ':'
@@ -136,6 +148,11 @@ resources:
                           - Ref: 'AWS::AccountId'
                           - 'table/TenureInformation'
 custom:
+  authorizerArns:
+    development: arn:aws:lambda:eu-west-2:859159924354:function:api-auth-verify-token-new-development-apiauthverifytokennew
+    staging:     arn:aws:lambda:eu-west-2:715003523189:function:api-auth-verify-token-new-staging-apiauthverifytokennew
+    production:  arn:aws:lambda:eu-west-2:153306643385:function:api-auth-verify-token-new-production-apiauthverifytokennew
+    pre-production: arn:aws:lambda:eu-west-2:578479666894:function:api-auth-verify-token-new-pre-production-apiauthverifytokennew
   safeguards:
     - title: Require authorizer
       safeguard: require-authorizer
@@ -156,3 +173,9 @@ custom:
       subnetIds:
         - subnet-05e595c59b7d6c8df
         - subnet-0e6bc9b4ac24493cc
+    pre-production:
+      securityGroupIds:
+        - sg-03d268eb8465879f4
+      subnetIds:
+        - subnet-08aa35159a8706faa
+        - subnet-0b848c5b14f841dfb
