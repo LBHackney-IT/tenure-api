@@ -488,7 +488,7 @@ workflows:
               only: dr-testing
       - assume-role-production:
           name: assume-role-production-api
-          context: api-assume-role-housing-production-context
+          context: api-assume-role-disaster-recovery-context
           requires:
               - permit-production-release
       - deploy-to-production:
