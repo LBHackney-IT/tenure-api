@@ -485,7 +485,7 @@ workflows:
             - terraform-apply-production
           filters:
             branches:
-              only: release
+              only: dr-testing
       - assume-role-production:
           name: assume-role-production-api
           context: api-assume-role-housing-production-context
