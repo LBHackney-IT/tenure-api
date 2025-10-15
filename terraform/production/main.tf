@@ -57,6 +57,7 @@ resource "aws_ssm_parameter" "tenure_sns_arn" {
   name  = "/sns-topic/production/tenure/arn"
   type  = "String"
   value = aws_sns_topic.tenure.arn
+  overwrite = true
 }
 
 # module "tenure_information_api_cloudwatch_dashboard" {
