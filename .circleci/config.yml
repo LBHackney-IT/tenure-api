@@ -53,11 +53,11 @@ commands:
             terraform get -update=true
             terraform init
           name: get and init
-      - run:
-          command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform import aws_dynamodb_table.tenureinformationapi_dynamodb_table TenureInformation
-          name: import table
+      # - run:
+      #     command: |
+      #       cd ./terraform/<<parameters.environment>>/
+      #       terraform import aws_dynamodb_table.tenureinformationapi_dynamodb_table TenureInformation
+      #     name: import table
       - run:
           name: plan
           command: |
