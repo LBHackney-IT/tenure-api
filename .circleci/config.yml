@@ -452,7 +452,9 @@ workflows:
             branches:
               only: dr-testing
       - deploy-to-production:
-          context: api-nuget-token-context
+          context: 
+            - api-nuget-token-context
+            - "Serverless Framework"
           requires:
             - terraform-apply-production
           filters:
