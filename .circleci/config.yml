@@ -157,10 +157,6 @@ jobs:
     steps:
       - checkout:
           method: full
-      - run:
-          name: Install Java 21 for SonarCloud
-          command: |
-            apt-get update && apt-get install -y openjdk-21-jre
       - sonarcloud/scan
   assume-role-development:
     executor: docker-python
