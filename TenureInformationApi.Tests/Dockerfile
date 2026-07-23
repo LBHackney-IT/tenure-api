@@ -32,7 +32,7 @@ RUN dotnet sonarscanner begin \
     /k:"LBHackney-IT_tenure-api" \
     /o:"lbhackney-it" \
     /d:sonar.host.url=https://sonarcloud.io \
-    /d:sonar.login="${SONAR_TOKEN}" \
+    /d:sonar.token="${SONAR_TOKEN}" \
     /d:sonar.coverageReportPaths="coverage/SonarQube.xml" \
     /d:sonar.dotnet.excludeTestProjects=true \
     /d:sonar.exclusions="**/*.js, **/*.ts, **/*.css"
