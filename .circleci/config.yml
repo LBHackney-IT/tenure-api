@@ -144,20 +144,24 @@ jobs:
   build-and-test:
     executor: docker-python
     steps:
-      - checkout:
-          method: full
+      - checkout
       - setup_remote_docker
-      - run:
-          name: Install Java 21 for SonarCloud
-          command: |
-            apt-get update && apt-get install -y openjdk-21-jre
-      - sonarcloud/scan
       - run:
           name: build
           command: docker compose build tenure-information-api-test           
       - run:
           name: Run tests
           command: docker compose run tenure-information-api-test
+  sonarcloud-analysis:
+    executor: docker-python
+    steps:
+      - checkout:
+          method: full
+      - run:
+          name: Install Java 21 for SonarCloud
+          command: |
+            apt-get update && apt-get install -y openjdk-21-jre
+      - sonarcloud/scan
   assume-role-development:
     executor: docker-python
     steps:
@@ -270,9 +274,14 @@ workflows:
                 - master
                 - release
       - build-and-test:
-          context:
-            - api-nuget-token-context
-            - SonarCloud
+          context: api-nuget-token-context
+          filters:
+            branches:
+              ignore:
+                - master
+                - release
+      - sonarcloud-analysis:
+          context: SonarCloud
           filters:
             branches:
               ignore:
@@ -300,9 +309,11 @@ workflows:
             branches:
               only: master
       - build-and-test:
-          context:
-            - api-nuget-token-context
-            - SonarCloud  
+          context: api-nuget-token-context
+          requires:
+            - check-code-formatting
+      - sonarcloud-analysis:
+          context: SonarCloud
           requires:
             - check-code-formatting
       - assume-role-development:
@@ -330,9 +341,11 @@ workflows:
             branches:
               only: release
       - build-and-test:
-          context:
-              - api-nuget-token-context
-              - SonarCloud
+          context: api-nuget-token-context
+          requires:
+              - check-code-formatting
+      - sonarcloud-analysis:
+          context: SonarCloud
           requires:
               - check-code-formatting
       - assume-role-staging:
