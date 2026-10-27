@@ -19,7 +19,7 @@ RUN apk update && apk add --no-cache nodejs
 # Update the system & install java binaries (for sonar)
 RUN apk update \
  && apk upgrade --no-cache \
- && apk add --no-cache openjdk17
+ && apk add --no-cache openjdk21
 
 # Install sonarscanner
 RUN dotnet tool install --global dotnet-sonarscanner
