@@ -152,7 +152,6 @@ custom:
     development: arn:aws:lambda:eu-west-2:859159924354:function:api-gateway-lambda-authorizer
     staging:     arn:aws:lambda:eu-west-2:715003523189:function:api-gateway-lambda-authorizer
     production:  arn:aws:lambda:eu-west-2:153306643385:function:api-gateway-lambda-authorizer
-    pre-production: arn:aws:lambda:eu-west-2:578479666894:function:api-auth-verify-token-new-pre-production-apiauthverifytokennew
   safeguards:
     - title: Require authorizer
       safeguard: require-authorizer
@@ -173,9 +172,3 @@ custom:
       subnetIds:
         - subnet-01d3657f97a243261
         - subnet-0b7b8fea07efabf34
-    pre-production:
-      securityGroupIds:
-        - sg-03d268eb8465879f4
-      subnetIds:
-        - subnet-08aa35159a8706faa
-        - subnet-0b848c5b14f841dfb
