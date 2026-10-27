@@ -61,30 +61,6 @@ commands:
           paths:
             - .aws
             - project/*
-  terraform-init-then-destroy:
-    description: "Initializes and creates a destruction plan from terraform configuration"
-    parameters:
-      environment:
-        type: string
-    steps:
-      - *attach_workspace
-      - checkout
-      - run:
-          name: get and init
-          command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform get -update=true
-            terraform init
-      - run:
-          name: destroy plan
-          command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform plan -destroy -out=destroy.plan
-      - persist_to_workspace:
-          root: *workspace_root
-          paths:
-            - .aws
-            - project/*
   terraform-compliance:
     description: "Run Terraform Compliance checks"
     parameters:
@@ -154,30 +130,6 @@ commands:
             npm i serverless-associate-waf
             npm i @serverless/safeguards-plugin --save-dev
             sls deploy --stage <<parameters.stage>> --conceal
-  remove-lambda:
-    description: "Removes API via Serverless"
-    parameters:
-      stage:
-        type: string
-    steps:
-      - *attach_workspace
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Install Node.js
-          command: |
-            curl -sL https://deb.nodesource.com/setup_20.x | bash -
-            apt-get update && apt-get install -y nodejs
-      - run:
-          name: Install serverless CLI
-          command: npm i -g serverless@^3
-      - run:
-          name: Remove lambda
-          command: |
-            cd ./TenureInformationApi/
-            npm i serverless-associate-waf
-            npm i @serverless/safeguards-plugin --save-dev
-            sls remove --stage <<parameters.stage>>
 jobs:
   check-code-formatting:
     executor: docker-dotnet
@@ -276,51 +228,6 @@ jobs:
     steps:
       - deploy-lambda:
           stage: "production"
-  assume-role-pre-production:
-    executor: docker-python
-    steps:
-      - assume-role-and-persist-workspace:
-          aws-account: $AWS_ACCOUNT_PRE_PRODUCTION
-  terraform-init-and-plan-pre-production:
-    executor: docker-terraform
-    steps:
-      - terraform-init-then-plan:
-          environment: "pre-production"
-  terraform-compliance-pre-production:
-    executor: docker-terraform
-    steps:
-      - terraform-compliance:
-          environment: "pre-production"
-  terraform-apply-pre-production:
-    executor: docker-terraform
-    steps:
-      - terraform-apply:
-          environment: "pre-production"
-  deploy-to-pre-production:
-    executor: docker-dotnet
-    steps:
-      - deploy-lambda:
-          stage: "pre-production"
-  remove-from-pre-production:
-    executor: docker-dotnet
-    steps:
-      - remove-lambda:
-          stage: "pre-production"
-  terraform-init-and-destroy-pre-production:
-    executor: docker-terraform
-    steps:
-      - terraform-init-then-destroy:
-          environment: "pre-production"
-  terraform-destroy-pre-production:
-    executor: docker-terraform
-    steps:
-      - *attach_workspace
-      - checkout
-      - run:
-          name: destroy
-          command: |
-            cd ./terraform/pre-production/
-            terraform apply -auto-approve destroy.plan
 
 workflows:
   check:
@@ -481,68 +388,3 @@ workflows:
           filters:
             branches:
               only: release
-
-  deploy-terraform-pre-production:
-    jobs:
-      - permit-pre-production-terraform-workflow:
-          type: approval
-          filters:
-            branches:
-              only: release
-      - assume-role-pre-production:
-          context: api-assume-role-housing-pre-production-context
-          requires:
-            - permit-pre-production-terraform-workflow
-      - terraform-init-and-plan-pre-production:
-          requires:
-            - assume-role-pre-production
-      - terraform-compliance-pre-production:
-          requires:
-            - terraform-init-and-plan-pre-production
-      - permit-pre-production-terraform-deployment:
-          type: approval
-          requires:
-            - terraform-compliance-pre-production
-      - terraform-apply-pre-production:
-          requires:
-            - permit-pre-production-terraform-deployment
-
-  deploy-code-pre-production:
-    jobs:
-      - build-and-test:
-          context: 
-            - api-nuget-token-context
-            - SonarCloud
-          filters:
-            branches:
-              only: release
-      - assume-role-pre-production:
-          context: api-assume-role-housing-pre-production-context
-          requires:
-            - build-and-test
-      - deploy-to-pre-production:
-          context:
-          - api-nuget-token-context
-          requires:
-            - assume-role-pre-production        
-
-  teardown-pre-production:
-    jobs:
-      - permit-pre-production-teardown:
-          type: approval
-          filters:
-            branches:
-              only: feat/ssi-1369-teardwon-pre-prod
-      - assume-role-pre-production:
-          context: api-assume-role-housing-pre-production-context
-          requires:
-            - permit-pre-production-teardown
-      - remove-from-pre-production:
-          requires:
-            - assume-role-pre-production
-      - terraform-init-and-destroy-pre-production:
-          requires:
-            - remove-from-pre-production
-      - terraform-destroy-pre-production:
-          requires:
-            - terraform-init-and-destroy-pre-production
