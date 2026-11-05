@@ -1,7 +1,7 @@
 service: tenure-information-api
 provider:
   name: aws
-  runtime: dotnet8
+  runtime: dotnet10
   memorySize: 2048
   tracing:
     lambda: true
@@ -14,7 +14,7 @@ plugins:
   - serverless-associate-waf
   - '@serverless/safeguards-plugin'
 package:
-  artifact: ./bin/release/net8.0/tenure-information-api.zip
+  artifact: ./bin/release/net10.0/tenure-information-api.zip
 functions:
   TenureInformationApi:
     name: ${self:service}-${self:provider.stage}
