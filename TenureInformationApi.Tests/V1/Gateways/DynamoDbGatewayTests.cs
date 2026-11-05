@@ -27,7 +27,7 @@ namespace TenureInformationApi.Tests.V1.Gateways
         private readonly Mock<ILogger<TenureDynamoDbGateway>> _logger;
         private readonly TenureDynamoDbGateway _classUnderTest;
         private readonly IDynamoDbFixture _dbFixture;
-        private readonly List<Action> _cleanup = new List<Action>();
+        private readonly List<Func<Task>> _cleanup = new List<Func<Task>>();
 
         private readonly Mock<IEntityUpdater> _mockUpdater;
 
@@ -52,8 +52,10 @@ namespace TenureInformationApi.Tests.V1.Gateways
         {
             if (disposing && !_disposed)
             {
+                // Await each cleanup so a failure surfaces in the test run instead of
+                // escaping an async void lambda and crashing the test host.
                 foreach (var action in _cleanup)
-                    action();
+                    action().GetAwaiter().GetResult();
 
                 _disposed = true;
             }
@@ -140,7 +142,7 @@ namespace TenureInformationApi.Tests.V1.Gateways
 
             dbEntity.Should().BeEquivalentTo(entityRequest.ToDatabase(), config => config.Excluding(y => y.VersionNumber));
 
-            _cleanup.Add(async () => await _dbFixture.DynamoDbContext.DeleteAsync<TenureInformationDb>(dbEntity.Id).ConfigureAwait(false));
+            _cleanup.Add(() => _dbFixture.DynamoDbContext.DeleteAsync<TenureInformationDb>(dbEntity.Id));
         }
 
         [Theory]
@@ -304,7 +306,12 @@ namespace TenureInformationApi.Tests.V1.Gateways
         private async Task InsertDatatoDynamoDB(TenureInformation entity)
         {
             var entityDb = entity.ToDatabase();
-            await _dbFixture.SaveEntityAsync(entityDb).ConfigureAwait(false);
+            await _dbFixture.DynamoDbContext.SaveAsync(entityDb).ConfigureAwait(false);
+
+            // Delete by key (unconditional). IDynamoDbFixture.SaveEntityAsync deletes the saved object, which
+            // is conditional on its VersionNumber and throws once the gateway has bumped the stored version.
+            // It also runs that delete in an async void lambda, so the failure crashes the test host.
+            _cleanup.Add(() => _dbFixture.DynamoDbContext.DeleteAsync<TenureInformationDb>(entityDb.Id));
         }
 
         [Fact]
