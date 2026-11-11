@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <NuGetAuditMode>direct</NuGetAuditMode>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591;S3925;CA1032;CA1305;CA1307;CA1062</NoWarn>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>NU1510;ASPDEPR008</WarningsNotAsErrors>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
   </PropertyGroup>
 
@@ -25,7 +27,7 @@
     <PackageReference Include="Hackney.Core.Sns" Version="1.52.0" />
     <PackageReference Include="Hackney.Core.Validation" Version="1.56.0" />
     <PackageReference Include="Hackney.Core.Validation.AspNet" Version="1.53.0" />
-    <PackageReference Include="Hackney.Shared.Tenure" Version="0.30.0" />
+    <PackageReference Include="Hackney.Shared.Tenure" Version="0.34.0" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.9" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="6.0.9" />

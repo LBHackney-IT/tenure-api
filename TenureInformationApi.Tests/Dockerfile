@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine
 
 # disable microsoft telematry
 ENV DOTNET_CLI_TELEMETRY_OPTOUT='true'
@@ -19,7 +19,7 @@ RUN apk update && apk add --no-cache nodejs
 # Update the system & install java binaries (for sonar)
 RUN apk update \
  && apk upgrade --no-cache \
- && apk add --no-cache openjdk17
+ && apk add --no-cache openjdk21
 
 # Install sonarscanner
 RUN dotnet tool install --global dotnet-sonarscanner
